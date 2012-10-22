@@ -1,4 +1,4 @@
-(ns foo.y-combinator)
+(ns ycombo)
 
 ;; tail recursion
 

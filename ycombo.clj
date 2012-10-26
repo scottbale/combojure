@@ -102,20 +102,11 @@
 (fac*'' 5)
 
 ;; =============================================
+;; fun with S K I combinators
+;; =============================================
 
-(def K
-   (fn [x]
-     (fn [y] x )))
-
-;; S f g x = f x (g x)
-(def S
-   (fn [f]
-     (fn [g]
-       (fn [x]
-         ((f x) (g x))))))
-
-(def I identity)
-
+;; creates a curried version of a function
+;; https://gist.github.com/745654
 (defmacro def-curry-fn [name args & body]
   {:pre [(not-any? #{'&} args)]}
   (if (empty? args)
@@ -132,21 +123,25 @@
          (let [helper# ~rec-funcs]
            (apply helper# args#))))))
 
-(def-curry-fn sum [x y] (+ x y))
+;; =============================================
+;; Combinators
+;; =============================================
 
-(def suc (fn [x] (+ 1 x)))
-
+;; S f g x = f x (g x)
 (def-curry-fn S [f g x] ((f x) (g x)))
+
+;; K x y = x
 (def-curry-fn K [x y] x)
 
-;; S (S (K plus) (K 1)) I
-(def suc ((S
-           ((S
-             (K sum))
-            (K 1)))
-          I))
+(def I identity)
 
-(defn arg-count [f]
-  (let [m (first (.getDeclaredMethods (class f)))
-        p (.getParameterTypes m)]
-    (alength p)))
+;; =============================================
+
+;; curried version of (+)
+(def-curry-fn sum [x y] (+ x y))
+
+;; "successor" reimplemented
+(def suc (S (S (K sum) (K 1)) I))
+
+;; "successor" straightforward
+(def suc' (fn [x] (+ 1 x)))

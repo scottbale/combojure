@@ -100,3 +100,53 @@
 (def fac*'' (f (Y f)))
 
 (fac*'' 5)
+
+;; =============================================
+
+(def K
+   (fn [x]
+     (fn [y] x )))
+
+;; S f g x = f x (g x)
+(def S
+   (fn [f]
+     (fn [g]
+       (fn [x]
+         ((f x) (g x))))))
+
+(def I identity)
+
+(defmacro def-curry-fn [name args & body]
+  {:pre [(not-any? #{'&} args)]}
+  (if (empty? args)
+    `(defn ~name ~args ~@body)
+    (let [rec-funcs (reduce (fn [l v]
+                              `(letfn [(helper#
+                                         ([] helper#)
+                                         ([x#] (let [~v x#] ~l))
+                                         ([x# & rest#] (let [~v x#]
+                                                         (apply (helper# x#) rest#))))]
+                                 helper#))
+                            `(do ~@body) (reverse args))]
+      `(defn ~name [& args#]
+         (let [helper# ~rec-funcs]
+           (apply helper# args#))))))
+
+(def-curry-fn sum [x y] (+ x y))
+
+(def suc (fn [x] (+ 1 x)))
+
+(def-curry-fn S [f g x] ((f x) (g x)))
+(def-curry-fn K [x y] x)
+
+;; S (S (K plus) (K 1)) I
+(def suc ((S
+           ((S
+             (K sum))
+            (K 1)))
+          I))
+
+(defn arg-count [f]
+  (let [m (first (.getDeclaredMethods (class f)))
+        p (.getParameterTypes m)]
+    (alength p)))

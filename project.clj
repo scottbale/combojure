@@ -5,4 +5,6 @@
   :dev-dependencies [[swank-clojure "1.4.0"]]
 
   :plugins [[lein-swank "1.4.4"]]
+
+  :source-paths ["src"]  
 )

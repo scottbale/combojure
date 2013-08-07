@@ -1,29 +1,8 @@
-(ns ski)
+(ns ski
+  (:use [curry :only (def-curry-fn)]))
 
 ;; =============================================
 ;; fun with S K I combinators
-;; =============================================
-
-;; creates a curried version of a function
-;; https://gist.github.com/sunilnandihalli/745654
-(defmacro def-curry-fn [name args & body]
-  {:pre [(not-any? #{'&} args)]}
-  (if (empty? args)
-    `(defn ~name ~args ~@body)
-    (let [rec-funcs (reduce (fn [l v]
-                              `(letfn [(helper#
-                                         ([] helper#)
-                                         ([x#] (let [~v x#] ~l))
-                                         ([x# & rest#] (let [~v x#]
-                                                         (apply (helper# x#) rest#))))]
-                                 helper#))
-                            `(do ~@body) (reverse args))]
-      `(defn ~name [& args#]
-         (let [helper# ~rec-funcs]
-           (apply helper# args#))))))
-
-;; =============================================
-;; S K I Combinators
 ;; =============================================
 
 ;; S f g x = f x (g x)
